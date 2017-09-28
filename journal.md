@@ -1,4 +1,6 @@
-# This is the first lab journal entry on markdown
+# Lab journal
+
+## Markdown
 
 Markdown is a formatting language for plain text where the syntax is also plain text. It is designed to be easily converted to HTML.
 
@@ -41,6 +43,37 @@ You can also define the image as a reference where you define a variable for the
 > Block quotes are denoted by a > symbol.
 > This is an example
 
-'inline code is represented by apostrophe character around the text'
+`inline code is represented by back-ticks around the text`
 
 HTML can also be used within markdown.
+
+## Command line
+Played around with commands.
+`cd, ls, mkdir` etc
+`ls -al` will show hidden files (files with a . at the front)
+
+## Git
+Git is a version control system.
+`git init` created a git repository in the current directory
+`git add` marks files to be committed
+`git commit` commits file changes to the local repo
+`git commit -m <message>` allows you to specify a message for the commit
+`git add <name> <url of remote>` is used to add a remote (usually named origin)
+`git push <remote name>` is used to push changes to a remote git server
+`git push -u origin master` push the local master branch to the remote called origin with the 'upstream' flag set
+
+
+## Hacking into the robot
+Googled details about the Aldebaran nao and discovered the default hostname of nao.local and the default username and password which are 'nao'.
+
+The robot it called chapman so worked out the hostname is chapman.local.
+
+ssh'ed in with 'ssh nao@chapman.local' and typed in the password.
+
+Ran the commands using the python command line interface (pressing enter after each line):
+
+```
+from naoqi import ALProxy
+tts = ALProxy("ALTextToSpeech", "localhost", 9559)
+tts.say("I've hacked you, robot!")
+```
