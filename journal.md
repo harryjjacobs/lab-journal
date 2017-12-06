@@ -194,6 +194,8 @@ NOTE: when editing the URDF file, you usually just only need to rerun the robot_
 commands but when adding links and joints RVIZ wasn't picking up the new ones so I had to restart it - so if
 it isn't working or there is something weird going on then that might be why. Maybe it caches it or something?
 
+![rviz screenshot](https://github.com/harryjjacobs/lab-journal/blob/master/RViz%20Screenshot.png "Screenshot of RVIZ working")
+
 I used the following URDF file for my robot arm (not to scale yet - TODO) with 3 degrees of freedom:
 
 ```
