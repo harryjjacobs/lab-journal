@@ -77,3 +77,185 @@ from naoqi import ALProxy
 tts = ALProxy("ALTextToSpeech", "localhost", 9559)
 tts.say("I've hacked you, robot!")
 ```
+
+
+## Servo Project
+
+### Using ROS.
+Before doing anything, you must run `roscore`
+
+These commands will block the terminal so you should open a new one or append '&' after the command.
+
+Once it is running you can publish messages on a 'topic':
+`rostopic pub /test std_msgs/String "hello"`
+
+In this case we are publishing a message of type String on the test topic.
+
+You can listen and print messages printed on this topic with:
+`rostopic echo /test`
+
+
+
+Rviz is used for 3D visualisation in ROS.
+
+rosserial must be installed for use with arduino (`sudo apt install ros-kinetic-rosserial-python ros-kinetic-rosserial-arduino`)
+
+The following code uses the Servo library and the ros library for arduino to control the
+servo motor via ROS.
+A node is set up to subscribe to the 'servo' topic so that whenever we receive a frame
+on this topic the callback function is called containing the 16 bit unsigned integer that
+is expected in the message. The 16 bit unsigned integer should be a value between 0-180
+as it represents the position to move the servo to in degrees.
+
+```
+#include <ros.h>
+#include <std_msgs/UInt16.h>
+#include<Servo.h>
+
+using namespace ros;
+
+NodeHandle nh;
+Servo servo;
+
+void cb(const std_msgs::UInt16& msg) {
+  servo.write(msg.data); // 0-180
+}
+
+Subscriber<std_msgs::UInt16> sub("servo", cb);
+
+void setup() {
+  nh.initNode();
+  nh.subscribe(sub);
+  
+  servo.attach(9);  // attaches the servo on pin 9 to the servo object
+}
+
+void loop() {
+  nh.spinOnce();
+  delay(1);
+}
+```
+
+This command is used to configure ROS to output to the serial port.
+`rosrun rosserial_python serial_node.py /dev/ttyACM0`
+
+--
+
+The next part is a 3D model of the arm in RViz.
+
+The .udrf file is an XML file containing the geometric description of the 3D object:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="roco_arm">
+   <link name="base_link">
+      <visual>
+         <geometry>
+            <cylinder length="0.06" radius="0.1" />
+         </geometry>
+      </visual>
+   </link>
+   <link name="first_segment">
+      <visual>
+         <geometry>
+            <box size="0.6 0.05 0.1" />
+         </geometry>
+         <origin rpy="0 0 0" xyz="-0.3 0 0" />
+      </visual>
+   </link>
+   <joint name="base_to_first" type="revolute">
+      <axis xyz="0 1 0" />
+      <limit effort="1000" lower="0" upper="3.14" velocity="0.5" />
+      <parent link="base_link" />
+      <child link="first_segment" />
+      <origin xyz="0 0 0.03" />
+   </joint>
+</robot>
+```
+
+You load this as the description of your robot using the rosparam command:
+`rosparam set robot_description -t models/robot-arm.urd`
+
+You then use the rosrun command to run the 'robot_state_publisher' and the 'joint_state_publisher'
+`rosrun robot_state_publisher robot_state_publisher`
+(open a new terminal)
+`rosrun joint_state_publisher joint_state_publisher _use_gui:=true`
+
+The robot_state_publisher broadcasts data about the transforms from the data file (the link elements).
+The joint_state_publisher reads data about the joints from the data file and creates a GUI so we can move
+the joints easily and adjust the pose of the robot.
+
+Now run `rviz` and add the `RobotModel` plugin.
+Then set the Fixed Frame (top-left under Global Options) to base_link so it knows what to use as
+the fixed frame.
+
+The joint_state_publisher GUI can be used to adjust the joints.
+
+NOTE: when editing the URDF file, you usually just only need to rerun the robot_state_publisher and joint_state_publisher
+commands but when adding links and joints RVIZ wasn't picking up the new ones so I had to restart it - so if
+it isn't working or there is something weird going on then that might be why. Maybe it caches it or something?
+
+I used the following URDF file for my robot arm (not to scale yet - TODO) with 3 degrees of freedom:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="roco_arm">
+   <link name="base_link">
+      <visual>
+         <geometry>
+            <cylinder length="0.06" radius="0.1" />
+         </geometry>
+      </visual>
+   </link>
+
+   <link name="base_rotator">
+      <visual>
+         <geometry>
+            <cylinder length="0.03" radius="0.1" />
+         </geometry>
+      </visual>
+   </link>
+
+   <link name="first_segment">
+      <visual>
+         <geometry>
+            <box size="0.6 0.05 0.1" />
+         </geometry>
+         <origin rpy="0 0 0" xyz="-0.3 0 0" />
+      </visual>
+   </link>
+
+   <link name="second_segment">
+      <visual>
+         <geometry>
+            <box size="0.6 0.05 0.1" />
+         </geometry>
+         <origin rpy="0 0 0" xyz="-0.3 0 0" />
+      </visual>
+   </link>
+   
+   <joint name="base_to_rotator" type="revolute">
+      <axis xyz="0 0 1" />
+      <limit effort="1000" lower="0" upper="3.14" velocity="0.5" />
+      <parent link="base_link" />
+      <child link="base_rotator" />
+      <origin xyz="0 0 0.03" />
+   </joint>
+
+	<joint name="rotator_to_first" type="revolute">
+      <axis xyz="0 1 0" />
+      <limit effort="1000" lower="0" upper="3.14" velocity="0.5" />
+      <parent link="base_rotator" />
+      <child link="first_segment" />
+      <origin xyz="0 0 0.015" />
+   </joint>
+
+   <joint name="first_to_second" type="revolute">
+      <axis xyz="0 -1 0" />
+      <limit effort="1000" lower="-2.07" upper="2.07" velocity="0.5" />
+      <parent link="first_segment" />
+      <child link="second_segment" />
+      <origin xyz="-0.6 0 0" />
+   </joint>
+
+</robot>
+```
