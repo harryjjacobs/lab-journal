@@ -196,7 +196,7 @@ it isn't working or there is something weird going on then that might be why. Ma
 
 ![rviz screenshot](https://github.com/harryjjacobs/lab-journal/blob/master/RViz%20Screenshot.png "Screenshot of RVIZ working")
 
-I used the following URDF file for my robot arm (not to scale yet - TODO) with 3 degrees of freedom:
+To start with I used the following URDF file for my robot arm with 3 degrees of freedom:
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -261,3 +261,195 @@ I used the following URDF file for my robot arm (not to scale yet - TODO) with 3
 
 </robot>
 ```
+
+I then used urdf files with references to the STL meshes for the arm model. Solidworks generated this file for me but with lots of additional stuff. Also the joint rotation wasn't working properly because I hadn't set the origins in Solidworks for each STL part when I exported the urdf and meshes. Rather than going back into Solidworks I just changed the origins and rotation data in the urdf.
+To generate the data in Solidworks I used a ROS add-on for Solidworks which you can find here: [http://wiki.ros.org/sw_urdf_exporter](http://wiki.ros.org/sw_urdf_exporter)
+
+```
+<?xml version="1.0"?>
+<robot
+  name="arm-stl">
+  <link
+    name="base_link">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <link
+    name="first_link">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/first_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint
+    name="first_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="first_link" />
+    <axis
+      xyz="0 0 1" />
+   <limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+  <link
+    name="second_link">
+    <visual>
+      <origin
+        xyz="0 -0.07 0"
+        rpy="0 1.57 1.57" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/second_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint
+    name="second_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0.07"
+      rpy="0 0 0" />
+    <parent
+      link="first_link" />
+    <child
+      link="second_link" />
+    <axis
+      xyz="1 0 0" />
+   <limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+  <link
+    name="third_link">
+    <visual>
+      <origin
+        xyz="0.14 0 -0.07"
+        rpy="1.57 1.57 -1.57" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/third_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint
+    name="third_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.07 0.07"
+      rpy="0 0 0" />
+    <parent
+      link="second_link" />
+    <child
+      link="third_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+</robot>
+```
+
+The basic Arduino code I used to read the ros messages and move the servos is:
+```
+#include <ros.h>
+
+#include <sensor_msgs/JointState.h>
+
+#include<Servo.h>
+
+
+
+using namespace ros;
+
+
+
+NodeHandle nh;
+
+Servo servo1;
+
+Servo servo2;
+
+Servo servo3;
+
+
+
+void cb(const sensor_msgs::JointState& msg) {
+
+  servo1.write(msg.position[0]*180/PI); // 0-180
+
+  servo2.write(msg.position[1]*180/PI); // 0-180
+
+  servo3.write(msg.position[2]*180/PI); // 0-180
+
+}
+
+
+
+Subscriber<sensor_msgs::JointState> sub("joint_states", cb);
+
+
+
+void setup() {
+
+  nh.getHardware()->setBaud(115200); // needs to be this high otherwise it doesn't work
+
+  nh.initNode();
+
+  nh.subscribe(sub);
+
+  servo1.attach(6);  // attaches the servo on pin 9 to the servo object
+
+  servo2.attach(5);
+
+  servo3.attach(10);
+
+}
+
+
+
+void loop() {
+
+  nh.spinOnce();
+
+  delay(1);
+
+}
+
+```
+
+![first gif of arm](https://github.com/harryjjacobs/lab-journal/blob/master/arm-attempt-1.gif "GIF of first attempt")
