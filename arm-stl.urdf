@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<robot
+  name="arm-stl">
+  <link
+    name="base_link">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <link
+    name="first_link">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/first_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint
+    name="first_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="first_link" />
+    <axis
+      xyz="0 0 1" />
+	<limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+  <link
+    name="second_link">
+    <visual>
+      <origin
+        xyz="0 -0.07 0"
+        rpy="0 1.57 1.57" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/second_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint
+    name="second_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0.07"
+      rpy="0 0 0" />
+    <parent
+      link="first_link" />
+    <child
+      link="second_link" />
+    <axis
+      xyz="1 0 0" />
+	<limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+  <link
+    name="third_link">
+    <visual>
+      <origin
+        xyz="0.14 0 -0.07"
+        rpy="1.57 1.57 -1.57" />
+      <geometry>
+        <mesh
+          filename="file:///home/harryjjacobs/Arduino/servo/models/meshes/third_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint
+    name="third_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.07 0.07"
+      rpy="0 0 0" />
+    <parent
+      link="second_link" />
+    <child
+      link="third_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="1000" lower="0" upper="3.141" velocity="0.5" />
+  </joint>
+</robot>
