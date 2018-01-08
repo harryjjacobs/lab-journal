@@ -1,4 +1,4 @@
-# Lab journal
+# Lab journal for ROCO222 module
 
 ## Markdown
 
@@ -48,7 +48,7 @@ You can also define the image as a reference where you define a variable for the
 HTML can also be used within markdown.
 
 ## Command line
-Played around with commands.
+Some common commands:
 `cd, ls, mkdir` etc
 `ls -al` will show hidden files (files with a . at the front)
 
@@ -60,7 +60,7 @@ Git is a version control system.
 `git commit -m <message>` allows you to specify a message for the commit
 `git add <name> <url of remote>` is used to add a remote (usually named origin)
 `git push <remote name>` is used to push changes to a remote git server
-`git push -u origin master` push the local master branch to the remote called origin with the 'upstream' flag set
+`git push -u origin master/images` push the local master/images branch to the remote called origin with the 'upstream' flag set
 
 
 ## Hacking into the robot
@@ -70,7 +70,7 @@ The robot it called chapman so worked out the hostname is chapman.local.
 
 ssh'ed in with 'ssh nao@chapman.local' and typed in the password.
 
-Ran the commands using the python command line interface (pressing enter after each line):
+Ran the commands using the python command line interface:
 
 ```
 from naoqi import ALProxy
@@ -79,7 +79,14 @@ tts.say("I've hacked you, robot!")
 ```
 
 
+--
+
+
 ## Servo Project
+
+![finished arm](https://github.com/harryjjacobs/lab-journal/blob/master/images/finished-arm.jpg "Picture of the completed arm")
+
+You can find the Solidworks files I used to make my model in the 'solidworks' directory and the STL files from it in the 'stl' directory. The Arduino code can be found inside the 'robot-arm-arduino' directory.
 
 ### Using ROS.
 Before doing anything, you must run `roscore`
@@ -89,11 +96,10 @@ These commands will block the terminal so you should open a new one or append '&
 Once it is running you can publish messages on a 'topic':
 `rostopic pub /test std_msgs/String "hello"`
 
-In this case we are publishing a message of type String on the test topic.
+In this case we are publishing a message of type String on the topic 'test'.
 
 You can listen and print messages printed on this topic with:
 `rostopic echo /test`
-
 
 
 Rviz is used for 3D visualisation in ROS.
@@ -138,6 +144,8 @@ void loop() {
 
 This command is used to configure ROS to output to the serial port.
 `rosrun rosserial_python serial_node.py /dev/ttyACM0`
+
+You can specify the baudrate with `_baud`, for example: `rosrun rosserial_python serial_node.py /dev/ttyS0 _baud:=115200`
 
 --
 
@@ -190,11 +198,10 @@ the fixed frame.
 
 The joint_state_publisher GUI can be used to adjust the joints.
 
-NOTE: when editing the URDF file, you usually just only need to rerun the robot_state_publisher and joint_state_publisher
-commands but when adding links and joints RVIZ wasn't picking up the new ones so I had to restart it - so if
-it isn't working or there is something weird going on then that might be why. Maybe it caches it or something?
+NOTE: if you are editing the URDF file, you need to rerun the robot_state_publisher and joint_state_publisher
+commands but you will need to disable and re-enable the RobotModel in rviz for it to update.
 
-![rviz screenshot](https://github.com/harryjjacobs/lab-journal/blob/master/RViz%20Screenshot.png "Screenshot of RVIZ working")
+![rviz screenshot](https://github.com/harryjjacobs/lab-journal/blob/master/images/RViz%20Screenshot.png "Screenshot of RVIZ working")
 
 To start with I used the following URDF file for my robot arm with 3 degrees of freedom:
 
@@ -262,8 +269,17 @@ To start with I used the following URDF file for my robot arm with 3 degrees of 
 </robot>
 ```
 
-I then used urdf files with references to the STL meshes for the arm model. Solidworks generated this file for me but with lots of additional stuff. Also the joint rotation wasn't working properly because I hadn't set the origins in Solidworks for each STL part when I exported the urdf and meshes. Rather than going back into Solidworks I just changed the origins and rotation data in the urdf.
+
+### Building the arm
+
+Annoyingly got some of the dimensions slightly wrong the first time I printed my design on the 3D printer so rather than spending ages filing out the parts I just reprinted some of them. I assembled my arm and wired it to the motor shield on the Arduino. I used the two orange PWM output plugs for the first two servos and then connected the third one to pin 10.
+
+I decided to make the arm modular so that bits could be added on to it in any order and it could be easily extended. It has 3 degrees of freedom currently.
+
+I then used urdf files with references to the STL meshes for the arm model. Solidworks generated this file for me but with lots of additional stuff like collision data which I removed for simplicity. Also the joint rotation wasn't working properly because I hadn't set the origins in Solidworks for each STL part when I exported the urdf and meshes. Rather than going back into Solidworks I just changed the origins and rotation data in the urdf.
 To generate the data in Solidworks I used a ROS add-on for Solidworks which you can find here: [http://wiki.ros.org/sw_urdf_exporter](http://wiki.ros.org/sw_urdf_exporter)
+
+Because I didn't make a ros package for simplicity's sake I have to use the absolute path to the STL files, this is inconvenient if I ever change which machine I'm working on so in future I think I will create a ros package (the Solidworks exporter actually creates one for you when you export).
 
 ```
 <?xml version="1.0"?>
@@ -384,72 +400,55 @@ To generate the data in Solidworks I used a ROS add-on for Solidworks which you 
 </robot>
 ```
 
+You can see the rviz RobotModel display here:
+
+![rviz model with the STL version of the URDF](https://github.com/harryjjacobs/lab-journal/blob/master/images/RViz-STL-Screenshot.png "rviz model with the STL version of the URDF")
+
 The basic Arduino code I used to read the ros messages and move the servos is:
 ```
 #include <ros.h>
-
 #include <sensor_msgs/JointState.h>
-
-#include<Servo.h>
-
-
+#include <Servo.h>
 
 using namespace ros;
 
-
-
 NodeHandle nh;
-
 Servo servo1;
-
 Servo servo2;
-
 Servo servo3;
 
-
-
 void cb(const sensor_msgs::JointState& msg) {
-
-  servo1.write(msg.position[0]*180/PI); // 0-180
-
+  servo1.write(msg.position[0]*180/PI); // 0-180 (convert from rad to deg)
   servo2.write(msg.position[1]*180/PI); // 0-180
-
   servo3.write(msg.position[2]*180/PI); // 0-180
-
 }
-
-
 
 Subscriber<sensor_msgs::JointState> sub("joint_states", cb);
 
-
-
 void setup() {
-
-  nh.getHardware()->setBaud(115200); // needs to be this high otherwise it doesn't work
-
+  nh.getHardware()->setBaud(115200); // needs to be high otherwise it doesn't work
   nh.initNode();
-
   nh.subscribe(sub);
 
-  servo1.attach(6);  // attaches the servo on pin 9 to the servo object
-
+  servo1.attach(6);  // attaches the servo on pin 6 to the servo object
   servo2.attach(5);
-
   servo3.attach(10);
-
 }
-
-
 
 void loop() {
-
   nh.spinOnce();
-
   delay(1);
-
 }
-
 ```
 
-![first gif of arm](https://github.com/harryjjacobs/lab-journal/blob/master/arm-attempt-1.gif "GIF of first attempt")
+In this program I set up a Subscriber object to listen for messages of type 'JointState' on the 'joint_states' topic. When a message is read the node handle calls the callback function named 'cb' with the 'JointState' argument 'msg'. We can then read the angles of each of the joints from the position array in radians and, after converting them to degrees, we can write the values straight to the servo motors.
+
+![first gif of arm](https://github.com/harryjjacobs/lab-journal/blob/master/images/arm-attempt-1.gif "GIF of first attempt")
+
+I fixed the problem with the first link falling off by adding a screw:
+![screw to secure first link](https://github.com/harryjjacobs/lab-journal/blob/master/images/screw-fix.jpg "Picture of screw to secure first link")
+
+I added screws to secure the 'motor-arm' in place at each joint:
+![screw to secure first link](https://github.com/harryjjacobs/lab-journal/blob/master/images/screw-at-joint.jpg "Picture of screw to secure first link")
+
+(Also, I blue-tacked the base to the desk to stop it falling over).
