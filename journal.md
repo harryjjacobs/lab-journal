@@ -8,9 +8,9 @@ Github supports additional markdown syntax and details are listed here: [markdow
 
 A # denotes a header, multiple hashes (##) make smaller and smaller headers (H1, H2 etc).
 
-Two underscores or asterisks on either side of the word will make it __bold__ and An underscore or asterisk on either side will make _italics_. (Really these are just defined as 'emphasis' in the markdown spec rather than bold or italics).
+Two underscores or asterisks on either side of the word will make it __bold__ and An underscore or asterisk on either side will make _italic_. (Really these are just defined as 'emphasis' in the markdown spec rather than bold or italic).
 
-The syntax can be combined to make bold and italics text.
+The syntax can be combined to make bold and italic text.
 
 * A single asterisk at the start of the line followed by makes an unordered list item
 
@@ -63,7 +63,7 @@ Git is a version control system.
 `git push -u origin master/images` push the local master/images branch to the remote called origin with the 'upstream' flag set
 
 
-## Hacking into the robot
+## Hacking into the robot task
 Googled details about the Aldebaran nao and discovered the default hostname of nao.local and the default username and password which are 'nao'.
 
 The robot it called chapman so worked out the hostname is chapman.local.
