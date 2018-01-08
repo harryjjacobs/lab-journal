@@ -12,7 +12,7 @@ Two underscores or asterisks on either side of the word will make it __bold__ an
 
 The syntax can be combined to make bold and italic text.
 
-* A single asterisk at the start of the line followed by makes an unordered list item
+* A single asterisk at the start of the line followed by text makes an unordered list item
 
 + A plus...
 
@@ -29,7 +29,7 @@ A horizontal rule can be drawn by either 3 dashes, 3 asterisks or 3 underscores:
 ___
 
 
-Link breaks are just created by newline characters (hitting enter once will insert 1 newline)
+Line breaks are just created by newline characters (hitting enter once will insert 1 newline)
 
 Links are denoted by the display text in square brackets followed by the url in normal brackets without a space. [This is a link](www.google.com)
 
@@ -54,13 +54,20 @@ Some common commands:
 
 ## Git
 Git is a version control system.
-`git init` created a git repository in the current directory
-`git add` marks files to be committed
-`git commit` commits file changes to the local repo
-`git commit -m <message>` allows you to specify a message for the commit
-`git add <name> <url of remote>` is used to add a remote (usually named origin)
-`git push <remote name>` is used to push changes to a remote git server
-`git push -u origin master/images` push the local master/images branch to the remote called origin with the 'upstream' flag set
+`git init` creates a git repository in the current directory.
+
+`git add` marks files to be committed.
+
+`git commit` commits file changes to the local repo.
+
+`git commit -m <message>` allows you to specify a message for the commit.
+
+`git add <name> <url of remote>` is used to add a remote (usually named origin).
+
+`git push <remote name>` is used to push changes to a remote git server.
+
+`git push -u origin master/images` push the local master/images branch to the remote called origin with the 'upstream' flag set.
+
 
 
 ## Hacking into the robot task
@@ -79,7 +86,7 @@ tts.say("I've hacked you, robot!")
 ```
 
 
---
+---
 
 
 ## Servo Project
@@ -98,7 +105,7 @@ Once it is running you can publish messages on a 'topic':
 
 In this case we are publishing a message of type String on the topic 'test'.
 
-You can listen and print messages printed on this topic with:
+You can listen and print messages sent on this topic with:
 `rostopic echo /test`
 
 
@@ -147,7 +154,7 @@ This command is used to configure ROS to output to the serial port.
 
 You can specify the baudrate with `_baud`, for example: `rosrun rosserial_python serial_node.py /dev/ttyS0 _baud:=115200`
 
---
+---
 
 The next part is a 3D model of the arm in RViz.
 
