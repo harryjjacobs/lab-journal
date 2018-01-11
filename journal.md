@@ -455,7 +455,7 @@ void cb(const sensor_msgs::JointState& msg) {
 Subscriber<sensor_msgs::JointState> sub("joint_states", cb);
 
 void setup() {
-  nh.getHardware()->setBaud(115200); // needs to be high otherwise it doesn't work
+  nh.getHardware()->setBaud(115200); // set the baud rate
   nh.initNode();
   nh.subscribe(sub);
 
