@@ -95,6 +95,28 @@ tts.say("I've hacked you, robot!")
 
 You can find the Solidworks files I used to make my model in the 'solidworks' directory and the STL files from it in the 'stl' directory. The Arduino code can be found inside the 'robot-arm-arduino' directory.
 
+### Servo motors
+The following code does a low frequency (0.2Hz) sine wave between 0..180 degrees on the servo:
+```
+#include <Servo.h>
+
+Servo servo;
+
+int i = 0;
+int del = 1000/0.2/360; // 0.2Hz over 360 degrees(2*180 spins)
+void setup() {
+  servo.attach(10);
+}
+
+void loop() {
+  for (i = 0; i <= 360; i++) { 
+    servo.write((sin(i*PI/180)+1)*180/2); // convert i to radians, get the sin of it, scale it up to between 0..180
+    delay(del);
+  }
+}
+```
+![low frequency servo sweep](https://github.com/harryjjacobs/lab-journal/blob/master/images/servo-sweep.gif "Gif of low frequency servo sweep")
+
 ### Using ROS.
 Before doing anything, you must run `roscore`
 
@@ -458,4 +480,6 @@ I fixed the problem with the first link falling off by adding a screw:
 I added screws to secure the 'motor-arm' in place at each joint:
 ![screw to secure first link](https://github.com/harryjjacobs/lab-journal/blob/master/images/screw-at-joint.jpg "Picture of screw to secure first link")
 
-(Also, I blue-tacked the base to the desk to stop it falling over).
+
+Here is a video of the finished arm:
+[https://photos.app.goo.gl/wmFRnksIS5U3Bn1m2](https://photos.app.goo.gl/wmFRnksIS5U3Bn1m2)
